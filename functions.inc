@@ -314,6 +314,72 @@ function secondsToTime($s) {
     return $h.':'.sprintf('%02d', $m).':'.sprintf('%02d', $s);
 }
 
+function array_to_csv($arr,$delim) {
+	#############################################
+	# Converts nested array $arr to a csv 'table array',
+	# with each row a single delimited string,
+	# and column cells separated by delimiter $delim.
+	# Assumes first row is header
+	#
+	# Requires functions:
+	#	csv_header
+	#	csv_row
+	#############################################
+
+	# Extract header
+	$header = csv_header($arr,$delim);
+	$header = preg_split("/[\f\r\n]+/",$header ); # convert string to array
+	$header = array_unique($header);	# get unique lines
+	$header = implode("", $header);	# convert back to string
+	
+	# Extract cells
+	$rows = csv_rows($arr,$delim);
+	$rows = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $rows);
+	
+	# Combine header and table
+	$table = $header . "\n" . $rows;
+	return($table);
+}
+
+function csv_header($arr,$delim) { 
+	# Extract  ultimate elements header
+	$return = "";
+	
+	foreach ($arr as $key => $value) {
+	//$return .= "$key: ";
+		if (is_array($value)) {
+			$return .= csv_header($value,$delim);
+		} else {
+			$return .= $key.$delim;
+		}
+		$return .= "";
+	}
+	
+	$return = rtrim(trim($return), $delim);
+	$return .= "\n";
+	return($return);
+}
+
+function csv_rows($arr,$delim) {
+	# Accumulate ultimate elements values as row
+	$return = "";
+
+	foreach ($arr as $key => $value) {
+		if (is_array($value)) {
+			$return .= csv_rows($value,$delim);
+		} else {
+			$return .= $value.$delim;
+		}
+		$return .= "";
+	}
+	
+	$return = rtrim(trim($return), $delim);
+	$return .= "\n";
+	return($return);
+}
+
+
+
 
 
 ?>
