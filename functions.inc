@@ -368,6 +368,16 @@ function csv_rows($arr,$delim) {
 		if (is_array($value)) {
 			$return .= csv_rows($value,$delim);
 		} else {
+			# Convert double quotes, if any, to single quotes
+			if ( preg_match('/"/', $value) == 1 ) {
+				$value = str_replace('"', "'", $value);
+			}
+			
+			# Wrap in double quotes if comma(s) present
+			if( strpos($value, ",") !== false ) {
+				$value = "\"" . $value . "\"";
+			}
+			
 			$return .= $value.$delim;
 		}
 		$return .= "";
