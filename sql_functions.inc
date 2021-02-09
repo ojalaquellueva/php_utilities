@@ -388,8 +388,8 @@ function sql_field_type_list($db_con, $tbl,$delim) {
 	if (!$fld_list_sql) die("\r\nBAD QUERY\r\n");
 	
 	while ($row = mysqli_fetch_array($fld_list_sql, MYSQLI_ASSOC)) {
-		$fld  = $row{'Field'};
-		$typ = $row{'Type'};
+		$fld  = $row['Field'];
+		$typ = $row['Type'];
 		$fld_typ[] = $fld . $delim . $typ;
 	}
 
@@ -403,7 +403,7 @@ function sql_field_list($db_con, $tbl) {
 	$fld_list_sql = mysqli_query($db_con, "SHOW COLUMNS FROM $tbl;");
 
 	while ($row = mysqli_fetch_array($fld_list_sql, MYSQLI_ASSOC)) {
-		$fld  = $row{'Field'};
+		$fld  = $row['Field'];
 		$flds[] = $fld;
 	}
 
@@ -541,7 +541,7 @@ function convert_utf8($db_con, $tbl) {
 		$result = mysqli_query($db_con, $sql);
 
 		while ($row = mysqli_fetch_assoc($result)) {
-			$str = $row{$fld};
+			$str = $row[$fld];
 		
 			//if (!(is_utf8($str))) {
 				// convert to utf8
@@ -649,7 +649,7 @@ function sql_get_first_result($db_con, $sql,$field_name) {
 			return NULL;
 		} else {
 			while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
-				$first_result  = $row{$field_name};
+				$first_result  = $row[$field_name];
 				//echo "first result='$first_result'\r\b$sql\r\n";
 				return $first_result;
 			}
@@ -702,7 +702,7 @@ function sql_get_cols($db_con, $sql,$field_names) {
 			while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
 				$colnames=explode("$delim",$field_names);
 				foreach($colnames as $key => $colname) {
-					$value=trim($row{$colname}); // strip surrounding whitespace from column names
+					$value=trim($row[$colname]); // strip surrounding whitespace from column names
 					$results  = $results.$delim.$value;
 				}
 				// Trim initial delimiter
@@ -727,7 +727,7 @@ function sql_get_results($db_con, $sql,$field_name,$delim) {
 			return NULL;
 		} else {
 			while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
-				$results  = $results.$delim.$row{$field_name};
+				$results  = $results.$delim.$row[$field_name];
 			}
 			return $results;
 		}

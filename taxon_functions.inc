@@ -115,7 +115,7 @@ function get_first_family($db_con,$taxon_id) {
 		$SQL_find_fam = "SELECT taxon FROM taxon WHERE left_index<$l_ind AND right_index>$r_ind AND rank = 'family' ORDER BY left_index ASC;";
 		$find_fam = (mysqli_query($db_con,$SQL_find_fam));
 		while ($row = mysqli_fetch_array($find_fam, MYSQLI_ASSOC)) {
-			$fam = $row{'taxon'};
+			$fam = $row['taxon'];
 		}
 		//$fam="[>1 family found!]";
 	} elseif ($num_rows<1) {
@@ -140,8 +140,8 @@ function get_parent_by_id($db_con,$taxon_id, $parent_rank, $kingdom) {
 	if ($num_rows!=1) die();
 
 	while ($row = mysqli_fetch_array($kingdom_indices, MYSQLI_ASSOC)) {
-		$kingdom_l_ind = $row{'left_index'};
-		$kingdom_r_ind = $row{'right_index'};
+		$kingdom_l_ind = $row['left_index'];
+		$kingdom_r_ind = $row['right_index'];
 	}
 //	echo "kingdom_l_ind=$kingdom_l_ind, kingdom_r_ind=$kingdom_r_ind\r\n";
 
@@ -194,8 +194,8 @@ function get_parent($db_con,$taxon, $parent_rank, $kingdom) {
 	if ($num_rows!=1) die(); 
 
 	while ($row = mysqli_fetch_array($kingdom_indices, MYSQLI_ASSOC)) {
-		$kingdom_l_ind = $row{'left_index'};
-		$kingdom_r_ind = $row{'right_index'};
+		$kingdom_l_ind = $row['left_index'];
+		$kingdom_r_ind = $row['right_index'];
 	}
 //	echo "kingdom_l_ind=$kingdom_l_ind, kingdom_r_ind=$kingdom_r_ind\r\n";
 
@@ -460,7 +460,7 @@ function get_children($db_con,$parent_id, $tbl, $id_name, $parent_id_name) {
 			$children[]=0;
 		} else {
 			while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
-				$children[]  = $row{'child_id'};
+				$children[]  = $row['child_id'];
 			}
 		}
 	}
