@@ -6,4 +6,4 @@
 * Alt (symlink): /home/bien/includes/php on vegbiendevbien/
 * Main php utilities repo as of 14 Sep. 2020
 * Compatible with PHP7+ (e.g., mysqli)
-* Updated to PHP8 on Apr. 2021
+* Updated to PHP8 Apr. 2021
