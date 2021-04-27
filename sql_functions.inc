@@ -34,6 +34,46 @@ function sql_append_from_file ($host, $user, $pwd, $db, $columns, $infile, $echo
 
 }
 
+function sql_check_import_errors($db_con, $src_file,$src_path,$dest_tbl) {
+	/////////////////////////////////////////////////////
+	// Compares the number of lines in source file and 
+	// with the number of records in the db table.
+	// If no issues found, returns 0, otherwise returns 
+	// error message
+	//
+	// Parameters:
+	// $src_file: name of source file
+	// $src_path: absolute path to source file
+	// $dest_tbl: name of destination table in MySQL
+	/////////////////////////////////////////////////////
+
+	// Set parameters
+	$error="0";
+
+	// Get counts of lines in source file and table
+	$filelines = count_lines($src_file,$src_path);
+	$filelines = $filelines-1; 	// Minus one for header
+	$tblrows = sql_tbl_rows($db_con, $dest_tbl);
+	$diff = abs($filelines - $tblrows);
+	
+	//echo "\r\nRows - table: $tblrows, file: $filelines, diff: $diff\r\n";
+
+	// Generate warning message, if any
+	if ($diff>2) {
+		// Counts do not match
+		// Allows difference of two lines: header plus one
+		// Can't seem to reliably distinguish line ending at end of file from actual line
+		$error = "WARNING: LINE COUNTS DO NOT MATCH! (table: $tblrows, file: $filelines)";
+	} elseif ($filelines==0) {
+		$error = "WARNING: SOURCE FILE '$src_file' IS EMPTY!";
+	} elseif ($tblrows==0) {
+		$error = "WARNING: TABLE IS EMPTY!";
+	} 
+
+	return $error;
+}
+
+
 function sql_append_from_file_local ($user, $pwd, $db, $columns, $infile, $echo_on) {
 	// appends records to table in database $db on $host from local text file $infile
 	// Appends to table with same name as text file, minus the extension
@@ -116,7 +156,7 @@ function db_connect($host,$user,$pwd,$db,$echo_on) {
 	}
 
 	// connect to db
-	if (!mysqli_select_db($db_con, $db,$db_con)) {
+	if (!mysqli_select_db($db_con, $db)) {
 		if ($echo_on) echo "\r\nCould not connect to '$db' database.\r\n";
 		return FALSE;
 	}
@@ -1075,5 +1115,88 @@ function sql_execute_multiple($db_con, $sqlmultiple) {
 		}
 	}
 }
+
+function sql_tbl_rows($db_con, $tbl) {
+	// returns number of records in table $tbl
+	$sql = "SELECT COUNT(*) AS records FROM `$tbl`;";
+	$result = mysqli_query($db_con,$sql);
+	if (!$result) {
+	    $msg_err = "ERROR: " . mysqli_error($db_con);
+	    $msg_err = $msg_err . "\r\nOffending SQL:\r\n$sql\r\n";
+	    die($msg_err);
+	}
+	$row = mysqli_fetch_row($result);
+	$tbl_rows = $row[0];
+	
+	return $tbl_rows;
+}
+
+function convert_fld_utf8($db_con,$tbl,$fld) {
+	// Converts all values of field $fld in table $tbl
+	// Requires pre-existing connection to database
+	// Echos progress message to terminal
+	
+	// Get unique values for this field
+	$query="
+		SELECT DISTINCT `$fld`
+		FROM $tbl;
+	";
+	$result=mysqli_query($db_con,$query);
+	$num_rows=mysqli_num_rows($result);
+	$currRow=0;
+
+	if ($num_rows>0) {
+		// Loop through values
+		while ($row=mysqli_fetch_array($result, MYSQLI_ASSOC)) {
+			$currRow++;
+			echo "  \r                                                                            ";
+			echo "  \r    `$fld`: processing row $currRow of $num_rows";
+
+			$fld_verbatim=$row[$fld];
+
+			// skip records with dangerous punctuation (?,",')
+			$str=trim($fld_verbatim);			
+			if (stristr($str,chr(63)) || stristr($str,chr(34)) || stristr($str,chr(39))) {	
+				// Do nothing
+			} else {
+				// Populate revised author field
+				$trans = new Latin1UTF8(); //convert utf8 codes
+				$fld_utf8Conv=$trans->mixed_to_latin1($str); // convert iso/ascii codes
+				$fld_scrubbed=iso2text($fld_utf8Conv);  
+			
+				// Update only if value has changed
+				if ($fld_verbatim<>$fld_scrubbed) {
+					$sql="UPDATE `$tbl`
+						SET $fld=\"$fld_scrubbed\"
+						WHERE $fld=\"$fld_verbatim\";
+					";
+					$msg_error="Error converting value \"$fld_verbatim\"";
+					// Do not use function sql_execute_multiple(), will
+					// fail if semi-colons in column value
+					if (sql_execute($db_con,$sql,true,false,'',$msg_error));
+				}
+			}
+		}
+	}
+	echo "  \r                                                                            ";
+	echo "  \r    `$fld`: processing row $currRow of $num_rows\r\n";
+}
+
+function sql_select_file_from_host_nopwd($host, $loginpath, $db,  $sql_select, $outfile, $echo_on) {
+	// runs select statement on remote $host and dumps result to text file
+	// $outfile can be just file name (write to working directory) or contain path as well
+		
+	$command = "mysql --login-path=$loginpath --database=$db --host=$host -e \"$sql_select\"  > $outfile";
+	if ($echo_on) echo $command."\r\n";
+	$result = system($command);
+
+	if ($result=="fail") {
+		return FALSE;
+	} else {
+		return TRUE;
+	}
+
+}
+
 
 ?>

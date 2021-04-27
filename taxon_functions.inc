@@ -414,7 +414,7 @@ function get_index($db_con,$tbl, $this_id, $ind, $id_name, $parent_id_name, $l_i
 	if (!(mysqli_query($db_con,$sql))) die("Failed to update right index for $id_name=$this_id in table `$tbl`.\r\n".mysqli_error()."\r\n");
 
 	// check if this node has children
-	if (has_children($this_id,$tbl,$id_name,$parent_id_name)) {
+	if (has_children($db_con,$this_id,$tbl,$id_name,$parent_id_name)) {
 		// make array of child ids
 		$child_ids = get_children($db_con,$this_id, $tbl, $id_name, $parent_id_name);
 

@@ -388,8 +388,36 @@ function csv_rows($arr,$delim) {
 	return($return);
 }
 
+function count_lines ($file, $filepath) {
+	/////////////////////////////////////////////////////////
+	// Returns the number of data lines in file.
+	//
+	// Aborts immediate with error message if file not found.
+	// Handles files with UNIX, legacy Mac and DOS line 
+	// endings. Better than wc -l because does not require
+	// newline (\n) at end of file
+	//
+	// Requires: perl
+	/////////////////////////////////////////////////////
 
+	$fileandpath = $filepath.$file;
+	//echo "\r\nfileandpath: $fileandpath\r\n";
+	
+	// check file exists
+	$errormsg = "ERROR in function count_lines: File '$file' not found\r\n";
+	if (!file_exists($fileandpath)) die ($errormsg);
 
-
+	// Counts line in file
+	// perl command converts mac and dos line endings to unix
+	// 'grep' 'wc' does not require newline (\n) at end of file
+	$cmd = 'perl -pe \'s/\r\n|\n|\r/\n/g\' ' . escapeshellarg($fileandpath) . " | grep -c ''";	
+	
+	$lines = exec($cmd,$output,$errcode);
+	$line=$output;
+	$errormsg = "ERROR in function count_lines: Failed command:\r\n$cmd\r\n";	
+	if ($errcode) die ($errormsg);
+	
+	return $lines;
+}
 
 ?>
