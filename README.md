@@ -7,3 +7,11 @@
 * Main php utilities repo as of 14 Sep. 2020
 * Compatible with PHP7+ (e.g., mysqli)
 * Updated to PHP8 Apr. 2021
+
+## WARNING
+
+* Edit these files ***only*** in the "Master local repo",   
+  as shown above. Files at any other location have been 
+  copied there automatically by git as part of a submodule.
+  Changes to files in submodules will be lost.        
+
